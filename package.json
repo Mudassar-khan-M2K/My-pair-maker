@@ -1,18 +1,15 @@
 {
   "name": "pakistan-jobs-session-generator",
   "version": "1.0.0",
-  "description": "WhatsApp Session Generator for Pakistan Jobs Bot",
+  "description": "WhatsApp Session Generator",
   "main": "index.js",
-  "engines": {
-    "node": "20.x"
-  },
-  "scripts": {
-    "start": "node index.js"
-  },
+  "engines": { "node": "20.x" },
+  "scripts": { "start": "node index.js" },
   "dependencies": {
-    "@whiskeysockets/baileys": "6.6.0",
-    "dotenv": "^16.3.1",
+    "maher-zubair-baileys": "^6.6.5",
     "express": "^4.18.2",
-    "pino": "^8.17.2"
+    "pino": "^8.17.2",
+    "dotenv": "^16.3.1",
+    "@hapi/boom": "^10.0.1"
   }
 }

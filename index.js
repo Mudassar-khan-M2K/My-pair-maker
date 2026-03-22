@@ -10,7 +10,7 @@ const {
   DisconnectReason,
   makeCacheableSignalKeyStore,
   Browsers,
-} = require("@whiskeysockets/baileys");
+} = require("maher-zubair-baileys");
 
 const app = express();
 app.use(express.json());
@@ -50,46 +50,44 @@ async function startPairing(phone) {
       version,
       logger,
       printQRInTerminal: false,
-      // ── Critical: must use makeCacheableSignalKeyStore ──────────────────────
       auth: {
         creds: state.creds,
         keys: makeCacheableSignalKeyStore(state.keys, logger),
       },
-      // ── Critical: Browsers.macOS for pairing to work ─────────────────────
-      browser: Browsers.macOS("Desktop"),
+      browser: Browsers.ubuntu("Chrome"),
       defaultQueryTimeoutMs: undefined,
       connectTimeoutMs: 60000,
       keepAliveIntervalMs: 10000,
       syncFullHistory: false,
       markOnlineOnConnect: false,
-      generateHighQualityLinkPreview: false,
     });
 
-    // ── Critical: request BEFORE connection.update, using creds.registered ──
-    if (!sock.authState.creds.registered) {
-      // Wait a moment for socket to stabilize
-      await new Promise(r => setTimeout(r, 2000));
-      try {
-        const code = await sock.requestPairingCode(phone);
-        const formatted = code?.match(/.{1,4}/g)?.join("-") || code;
-        sessions[phone].code = formatted;
-        sessions[phone].status = "code_ready";
-        console.log(`[✅ CODE] ${phone} → ${formatted}`);
-      } catch (err) {
-        console.error(`[❌ CODE] ${err.message}`);
-        sessions[phone].status = "error";
-        sessions[phone].error = "Could not get pairing code: " + err.message;
-      }
-    }
+    let codeSent = false;
 
     sock.ev.on("connection.update", async (update) => {
-      const { connection, lastDisconnect } = update;
+      const { connection, lastDisconnect, qr } = update;
+
+      if (qr && !codeSent) {
+        codeSent = true;
+        try {
+          await new Promise(r => setTimeout(r, 1000));
+          const code = await sock.requestPairingCode(phone);
+          const formatted = code?.match(/.{1,4}/g)?.join("-") || code;
+          sessions[phone].code = formatted;
+          sessions[phone].status = "code_ready";
+          console.log(`[CODE] ${phone} → ${formatted}`);
+        } catch (err) {
+          console.error(`[CODE ERR] ${err.message}`);
+          sessions[phone].status = "error";
+          sessions[phone].error = err.message;
+        }
+      }
 
       if (connection === "open") {
         await saveCreds();
         sessions[phone].sessionId = encodeSession(sessionDir);
         sessions[phone].status = "connected";
-        console.log(`[🎉 DONE] ${phone} paired!`);
+        console.log(`[DONE] ${phone} paired!`);
       }
 
       if (connection === "close") {
@@ -97,7 +95,7 @@ async function startPairing(phone) {
         console.log(`[CLOSE] ${phone} code=${code}`);
         if (sessions[phone]?.status !== "connected") {
           sessions[phone].status = "error";
-          sessions[phone].error = `Connection closed (${code}). Please try again.`;
+          sessions[phone].error = `Closed (${code}). Try again.`;
         }
       }
     });
@@ -106,22 +104,17 @@ async function startPairing(phone) {
 
   } catch (err) {
     console.error(`[FATAL] ${phone}:`, err.message);
-    if (sessions[phone]) {
-      sessions[phone].status = "error";
-      sessions[phone].error = err.message;
-    }
+    if (sessions[phone]) { sessions[phone].status = "error"; sessions[phone].error = err.message; }
   }
 }
 
 app.post("/api/pair", (req, res) => {
   let { phone } = req.body;
-  if (!phone) return res.status(400).json({ error: "Phone number required" });
+  if (!phone) return res.status(400).json({ error: "Phone required" });
   phone = phone.replace(/[^0-9]/g, "");
-  if (phone.length < 10) return res.status(400).json({ error: "Invalid phone number" });
+  if (phone.length < 10) return res.status(400).json({ error: "Invalid number" });
   delete sessions[phone];
-  startPairing(phone).catch(err => {
-    if (sessions[phone]) { sessions[phone].status = "error"; sessions[phone].error = err.message; }
-  });
+  startPairing(phone).catch(console.error);
   res.json({ success: true, phone });
 });
 
