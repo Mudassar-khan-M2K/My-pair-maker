@@ -8,7 +8,8 @@ const {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   DisconnectReason,
-  delay,
+  makeCacheableSignalKeyStore,
+  Browsers,
 } = require("@whiskeysockets/baileys");
 
 const app = express();
@@ -19,7 +20,6 @@ const PORT = process.env.PORT || 3000;
 const SESSIONS_DIR = "/tmp/wa-sessions";
 if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
 
-// state[phone] = { status, code, sessionId, error }
 const sessions = {};
 
 function cleanSession(phone) {
@@ -39,63 +39,65 @@ async function startPairing(phone) {
   cleanSession(phone);
   const sessionDir = path.join(SESSIONS_DIR, phone);
   fs.mkdirSync(sessionDir, { recursive: true });
-
   sessions[phone] = { status: "connecting", code: null, sessionId: null, error: null };
 
   try {
     const { version } = await fetchLatestBaileysVersion();
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+    const logger = pino({ level: "silent" });
 
     const sock = makeWASocket({
       version,
-      logger: pino({ level: "silent" }),
+      logger,
       printQRInTerminal: false,
-      auth: state,
-      // Exact browser string that works for pairing
-      browser: ["Mac OS", "Chrome", "14.4.1"],
-      // undefined = no timeout during pairing (critical!)
+      // ── Critical: must use makeCacheableSignalKeyStore ──────────────────────
+      auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, logger),
+      },
+      // ── Critical: Browsers.macOS for pairing to work ─────────────────────
+      browser: Browsers.macOS("Desktop"),
       defaultQueryTimeoutMs: undefined,
       connectTimeoutMs: 60000,
       keepAliveIntervalMs: 10000,
       syncFullHistory: false,
       markOnlineOnConnect: false,
+      generateHighQualityLinkPreview: false,
     });
 
-    let pairCodeSent = false;
+    // ── Critical: request BEFORE connection.update, using creds.registered ──
+    if (!sock.authState.creds.registered) {
+      // Wait a moment for socket to stabilize
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        const code = await sock.requestPairingCode(phone);
+        const formatted = code?.match(/.{1,4}/g)?.join("-") || code;
+        sessions[phone].code = formatted;
+        sessions[phone].status = "code_ready";
+        console.log(`[✅ CODE] ${phone} → ${formatted}`);
+      } catch (err) {
+        console.error(`[❌ CODE] ${err.message}`);
+        sessions[phone].status = "error";
+        sessions[phone].error = "Could not get pairing code: " + err.message;
+      }
+    }
 
     sock.ev.on("connection.update", async (update) => {
-      const { connection, lastDisconnect, qr } = update;
-
-      // ── Request pairing code when QR is available (proven working pattern) ──
-      if (qr && !pairCodeSent) {
-        pairCodeSent = true;
-        try {
-          await delay(500);
-          const code = await sock.requestPairingCode(phone);
-          const formatted = code?.match(/.{1,4}/g)?.join("-") || code;
-          sessions[phone].code = formatted;
-          sessions[phone].status = "code_ready";
-          console.log(`[✅ CODE] ${phone} → ${formatted}`);
-        } catch (err) {
-          console.error(`[❌ CODE] ${phone}:`, err.message);
-          sessions[phone].status = "error";
-          sessions[phone].error = "Failed to get pairing code: " + err.message;
-        }
-      }
+      const { connection, lastDisconnect } = update;
 
       if (connection === "open") {
         await saveCreds();
         sessions[phone].sessionId = encodeSession(sessionDir);
         sessions[phone].status = "connected";
-        console.log(`[🎉 DONE] ${phone} paired successfully!`);
+        console.log(`[🎉 DONE] ${phone} paired!`);
       }
 
       if (connection === "close") {
-        const statusCode = lastDisconnect?.error?.output?.statusCode;
-        console.log(`[CLOSE] ${phone} - statusCode: ${statusCode}`);
+        const code = lastDisconnect?.error?.output?.statusCode;
+        console.log(`[CLOSE] ${phone} code=${code}`);
         if (sessions[phone]?.status !== "connected") {
           sessions[phone].status = "error";
-          sessions[phone].error = "Connection closed (code " + statusCode + "). Please try again.";
+          sessions[phone].error = `Connection closed (${code}). Please try again.`;
         }
       }
     });
@@ -111,24 +113,18 @@ async function startPairing(phone) {
   }
 }
 
-// ── POST /api/pair — starts pairing in background, returns immediately ────────
 app.post("/api/pair", (req, res) => {
   let { phone } = req.body;
   if (!phone) return res.status(400).json({ error: "Phone number required" });
   phone = phone.replace(/[^0-9]/g, "");
   if (phone.length < 10) return res.status(400).json({ error: "Invalid phone number" });
-
   delete sessions[phone];
-
   startPairing(phone).catch(err => {
-    console.error(err);
     if (sessions[phone]) { sessions[phone].status = "error"; sessions[phone].error = err.message; }
   });
-
   res.json({ success: true, phone });
 });
 
-// ── GET /api/status/:phone — frontend polls every 2s ─────────────────────────
 app.get(["/api/status/:phone", "/api/session/:phone"], (req, res) => {
   const phone = req.params.phone.replace(/[^0-9]/g, "");
   const s = sessions[phone];
@@ -137,5 +133,4 @@ app.get(["/api/status/:phone", "/api/session/:phone"], (req, res) => {
 });
 
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
-
-app.listen(PORT, () => console.log(`🇵🇰 Session Generator running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Session Generator on port ${PORT}`));
