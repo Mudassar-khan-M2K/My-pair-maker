@@ -1,622 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🇵🇰 Pakistan Jobs Bot — Session Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green:     #25D366;
-      --green-d:   #128C7E;
-      --green-l:   #dcfce7;
-      --bg:        #0f172a;
-      --surface:   #1e293b;
-      --surface2:  #273548;
-      --border:    #334155;
-      --text:      #f1f5f9;
-      --muted:     #94a3b8;
-      --accent:    #25D366;
-      --danger:    #ef4444;
-      --warning:   #f59e0b;
-      --radius:    16px;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --g:#25D366;--gd:#128C7E;--bg:#0f172a;--s:#1e293b;--s2:#273548;
+      --b:#334155;--t:#f1f5f9;--m:#94a3b8;--r:14px;
     }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-      background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(37,211,102,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 80%, rgba(18,140,126,0.06) 0%, transparent 60%);
-    }
-
-    /* ── Header ── */
-    .header {
-      text-align: center;
-      margin-bottom: 36px;
-    }
-    .header .logo {
-      width: 72px; height: 72px;
-      background: linear-gradient(135deg, var(--green), var(--green-d));
-      border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px;
-      margin: 0 auto 16px;
-      box-shadow: 0 8px 32px rgba(37,211,102,0.25);
-    }
-    .header h1 {
-      font-size: clamp(22px, 4vw, 30px);
-      font-weight: 800;
-      background: linear-gradient(135deg, #fff 40%, var(--green));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.2;
-    }
-    .header p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 8px;
-    }
-
-    /* ── Card ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-    }
-
-    /* ── Steps indicator ── */
-    .steps {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      margin-bottom: 32px;
-    }
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-    .step-dot {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      transition: all 0.3s;
-    }
-    .step.active .step-dot {
-      background: var(--green);
-      border-color: var(--green);
-      color: #000;
-      box-shadow: 0 0 16px rgba(37,211,102,0.4);
-    }
-    .step.done .step-dot {
-      background: var(--green-d);
-      border-color: var(--green-d);
-      color: #fff;
-    }
-    .step-label {
-      font-size: 10px;
-      color: var(--muted);
-      font-weight: 500;
-      white-space: nowrap;
-    }
-    .step.active .step-label { color: var(--green); }
-    .step-line {
-      flex: 1;
-      height: 2px;
-      background: var(--border);
-      margin: 0 8px;
-      margin-bottom: 20px;
-      transition: background 0.3s;
-    }
-    .step-line.done { background: var(--green-d); }
-
-    /* ── Form ── */
-    .form-group { margin-bottom: 20px; }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .input-wrap {
-      display: flex;
-      align-items: center;
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .input-wrap:focus-within {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(37,211,102,0.12);
-    }
-    .input-flag {
-      padding: 0 14px;
-      font-size: 20px;
-      border-right: 1.5px solid var(--border);
-      height: 52px;
-      display: flex; align-items: center;
-    }
-    input[type="tel"] {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      padding: 0 16px;
-      height: 52px;
-    }
-    input[type="tel"]::placeholder { color: var(--muted); }
-
-    /* ── Button ── */
-    .btn {
-      width: 100%;
-      height: 52px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px;
-      letter-spacing: 0.3px;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--green), var(--green-d));
-      color: #000;
-      box-shadow: 0 4px 16px rgba(37,211,102,0.3);
-    }
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(37,211,102,0.4);
-    }
-    .btn-primary:active:not(:disabled) { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-ghost {
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1.5px solid var(--border);
-      margin-top: 10px;
-    }
-    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-
-    /* ── Pairing code display ── */
-    .code-box {
-      background: var(--surface2);
-      border: 2px dashed var(--green);
-      border-radius: 14px;
-      padding: 24px;
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .code-label {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .code-value {
-      font-size: 36px;
-      font-weight: 800;
-      letter-spacing: 6px;
-      color: var(--green);
-      font-family: 'Courier New', monospace;
-      text-shadow: 0 0 20px rgba(37,211,102,0.4);
-    }
-    .code-hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    /* ── Instructions ── */
-    .instructions {
-      background: var(--surface2);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-    .instructions ol {
-      list-style: none;
-      counter-reset: steps;
-    }
-    .instructions ol li {
-      counter-increment: steps;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 8px 0;
-      font-size: 13px;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      line-height: 1.5;
-    }
-    .instructions ol li:last-child { border-bottom: none; }
-    .instructions ol li::before {
-      content: counter(steps);
-      width: 22px; height: 22px;
-      background: var(--green);
-      color: #000;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* ── Waiting animation ── */
-    .waiting-box {
-      text-align: center;
-      padding: 24px 0;
-    }
-    .spinner {
-      width: 48px; height: 48px;
-      border: 3px solid var(--border);
-      border-top-color: var(--green);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .waiting-text { color: var(--muted); font-size: 14px; }
-    .waiting-text strong { color: var(--text); display: block; font-size: 16px; margin-bottom: 4px; }
-
-    /* ── Session ID result ── */
-    .success-icon {
-      width: 64px; height: 64px;
-      background: linear-gradient(135deg, var(--green), var(--green-d));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 16px;
-      box-shadow: 0 8px 24px rgba(37,211,102,0.3);
-    }
-    .session-box {
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      position: relative;
-    }
-    .session-box textarea {
-      width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--green);
-      font-family: 'Courier New', monospace;
-      font-size: 11px;
-      resize: none;
-      height: 80px;
-      line-height: 1.5;
-    }
-    .copy-btn {
-      position: absolute;
-      top: 10px; right: 10px;
-      background: var(--green);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .copy-btn:hover { background: var(--green-d); color: #fff; }
-    .copy-btn.copied { background: #10b981; color: #fff; }
-
-    /* ── Alert ── */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .alert-info { background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.2); color: var(--green); }
-    .alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--warning); }
-    .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger); }
-
-    /* ── Panels ── */
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    /* ── Footer ── */
-    .footer {
-      margin-top: 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .footer a { color: var(--green); text-decoration: none; }
-
-    /* ── Pulse dot ── */
-    .pulse-dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);
+      min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:20px 16px;
+      background-image:radial-gradient(ellipse at 20% 20%,rgba(37,211,102,.07) 0%,transparent 60%),
+      radial-gradient(ellipse at 80% 80%,rgba(18,140,126,.07) 0%,transparent 60%);}
+    .header{text-align:center;margin-bottom:28px}
+    .logo{width:68px;height:68px;background:linear-gradient(135deg,var(--g),var(--gd));
+      border-radius:18px;display:flex;align-items:center;justify-content:center;
+      font-size:34px;margin:0 auto 14px;box-shadow:0 8px 28px rgba(37,211,102,.28)}
+    h1{font-size:clamp(20px,4vw,27px);font-weight:800;
+      background:linear-gradient(135deg,#fff 40%,var(--g));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .sub{color:var(--m);font-size:13px;margin-top:6px}
+    .card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);
+      padding:28px;width:100%;max-width:450px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    /* Steps */
+    .steps{display:flex;align-items:center;margin-bottom:26px}
+    .step{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .dot{width:30px;height:30px;border-radius:50%;background:var(--s2);border:2px solid var(--b);
+      display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+      color:var(--m);transition:all .3s}
+    .step.active .dot{background:var(--g);border-color:var(--g);color:#000;box-shadow:0 0 14px rgba(37,211,102,.4)}
+    .step.done .dot{background:var(--gd);border-color:var(--gd);color:#fff}
+    .slabel{font-size:10px;color:var(--m);font-weight:600;white-space:nowrap}
+    .step.active .slabel{color:var(--g)}
+    .sline{flex:1;height:2px;background:var(--b);margin:0 8px 18px;transition:background .3s}
+    .sline.done{background:var(--gd)}
+    /* Form */
+    label{display:block;font-size:11px;font-weight:700;color:var(--m);
+      margin-bottom:7px;letter-spacing:.8px;text-transform:uppercase}
+    .iw{display:flex;align-items:center;background:var(--s2);border:1.5px solid var(--b);
+      border-radius:11px;overflow:hidden;transition:border-color .2s,box-shadow .2s;margin-bottom:18px}
+    .iw:focus-within{border-color:var(--g);box-shadow:0 0 0 3px rgba(37,211,102,.1)}
+    .flag{padding:0 13px;font-size:20px;border-right:1.5px solid var(--b);height:50px;display:flex;align-items:center}
+    input[type=tel]{flex:1;background:transparent;border:none;outline:none;
+      color:var(--t);font-size:15px;font-family:'Inter',sans-serif;padding:0 14px;height:50px}
+    input::placeholder{color:var(--m)}
+    /* Buttons */
+    .btn{width:100%;height:50px;border:none;border-radius:11px;font-size:14px;font-weight:700;
+      font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-p{background:linear-gradient(135deg,var(--g),var(--gd));color:#000;
+      box-shadow:0 4px 14px rgba(37,211,102,.3)}
+    .btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 20px rgba(37,211,102,.4)}
+    .btn-p:disabled{opacity:.5;cursor:not-allowed}
+    .btn-g{background:var(--s2);color:var(--m);border:1.5px solid var(--b);margin-top:10px}
+    .btn-g:hover{border-color:var(--m);color:var(--t)}
+    /* Panels */
+    .panel{display:none}.panel.active{display:block}
+    /* Alert */
+    .alert{padding:11px 13px;border-radius:10px;font-size:13px;margin-bottom:18px;
+      display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+    .ai{background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:#86efac}
+    .aw{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fbbf24}
+    .ae{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+    /* Steps list */
+    .slist{background:var(--s2);border-radius:11px;padding:14px;margin-bottom:18px}
+    .slist li{display:flex;align-items:flex-start;gap:11px;padding:6px 0;font-size:13px;
+      color:var(--m);border-bottom:1px solid var(--b);line-height:1.5;list-style:none}
+    .slist li:last-child{border-bottom:none}
+    .sn{width:21px;height:21px;background:var(--g);color:#000;border-radius:50%;
+      font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    /* Code */
+    .codebox{background:var(--s2);border:2px dashed var(--g);border-radius:13px;
+      padding:22px;text-align:center;margin-bottom:18px}
+    .clabel{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:9px}
+    .cval{font-size:36px;font-weight:800;letter-spacing:8px;color:var(--g);
+      font-family:'Courier New',monospace;text-shadow:0 0 18px rgba(37,211,102,.35)}
+    .chint{font-size:12px;color:var(--m);margin-top:9px}
+    /* Spinner */
+    .spin{width:42px;height:42px;border:3px solid var(--b);border-top-color:var(--g);
+      border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    .wbox{text-align:center;padding:18px 0}
+    .wt{color:var(--m);font-size:13px;margin-top:4px}
+    .wtt{color:var(--t);font-size:15px;font-weight:700;margin-bottom:3px}
+    /* Pulse */
+    .pd{display:inline-block;width:7px;height:7px;background:var(--g);border-radius:50%;
+      animation:pl 1.4s ease-in-out infinite}
+    @keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
+    /* Session */
+    .sicon{width:58px;height:58px;background:linear-gradient(135deg,var(--g),var(--gd));
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:24px;margin:0 auto 13px;box-shadow:0 7px 22px rgba(37,211,102,.3)}
+    .sbox{background:var(--s2);border:1.5px solid var(--b);border-radius:11px;
+      padding:13px;margin-bottom:13px;position:relative}
+    .sbox textarea{width:100%;background:transparent;border:none;outline:none;
+      color:var(--g);font-family:'Courier New',monospace;font-size:11px;
+      resize:none;height:74px;line-height:1.5;padding-right:60px}
+    .cpbtn{position:absolute;top:10px;right:10px;background:var(--g);color:#000;
+      border:none;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+    .cpbtn:hover{background:var(--gd);color:#fff}
+    .cpbtn.ok{background:#10b981;color:#fff}
+    .footer{margin-top:20px;text-align:center;color:var(--m);font-size:12px}
+    .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+      background:var(--g);margin-right:6px;animation:pl 1.4s ease-in-out infinite}
   </style>
 </head>
 <body>
+<div class="header">
+  <div class="logo">🤖</div>
+  <h1>🇵🇰 Pakistan Jobs Bot</h1>
+  <p class="sub">WhatsApp Session Generator</p>
+</div>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">🤖</div>
-    <h1>🇵🇰 Pakistan Jobs Bot</h1>
-    <p>WhatsApp Session Generator — Powered by Baileys</p>
+<div class="card">
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="s1"><div class="dot">1</div><div class="slabel">Phone</div></div>
+    <div class="sline" id="l1"></div>
+    <div class="step" id="s2"><div class="dot">2</div><div class="slabel">Pair</div></div>
+    <div class="sline" id="l2"></div>
+    <div class="step" id="s3"><div class="dot">3</div><div class="slabel">Done</div></div>
   </div>
 
-  <!-- Card -->
-  <div class="card">
-
-    <!-- Steps -->
-    <div class="steps">
-      <div class="step active" id="step1">
-        <div class="step-dot">1</div>
-        <div class="step-label">Phone</div>
-      </div>
-      <div class="step-line" id="line1"></div>
-      <div class="step" id="step2">
-        <div class="step-dot">2</div>
-        <div class="step-label">Pair</div>
-      </div>
-      <div class="step-line" id="line2"></div>
-      <div class="step" id="step3">
-        <div class="step-dot">3</div>
-        <div class="step-label">Done</div>
-      </div>
+  <!-- Panel 1: Phone input -->
+  <div class="panel active" id="p-phone">
+    <div class="alert ai"><span>📱</span><span>Enter your WhatsApp number to get a <strong>SESSION_ID</strong> for the Jobs Bot.</span></div>
+    <label>WhatsApp Number (with country code)</label>
+    <div class="iw">
+      <div class="flag">🇵🇰</div>
+      <input type="tel" id="phoneInput" placeholder="923216046022" maxlength="15" autocomplete="off"/>
     </div>
-
-    <!-- Panel 1: Enter Phone -->
-    <div class="panel active" id="panel-phone">
-      <div class="alert alert-info">
-        <span>📱</span>
-        <span>Enter your WhatsApp number to generate a <strong>SESSION_ID</strong> for the Jobs Bot.</span>
-      </div>
-
-      <div class="form-group">
-        <label>WhatsApp Number</label>
-        <div class="input-wrap">
-          <div class="input-flag">🇵🇰</div>
-          <input
-            type="tel"
-            id="phoneInput"
-            placeholder="923216046022"
-            maxlength="15"
-            autocomplete="off"
-          />
-        </div>
-      </div>
-
-      <div class="instructions">
-        <ol>
-          <li>Enter your full number with country code (e.g. 923216046022)</li>
-          <li>Click "Get Pairing Code" below</li>
-          <li>Enter the code in WhatsApp → Linked Devices</li>
-          <li>Copy your SESSION_ID and give it to the bot</li>
-        </ol>
-      </div>
-
-      <button class="btn btn-primary" id="getPairBtn" onclick="requestPairingCode()">
-        <span>📲</span> Get Pairing Code
-      </button>
-    </div>
-
-    <!-- Panel 2: Show Pairing Code -->
-    <div class="panel" id="panel-code">
-      <div class="code-box">
-        <div class="code-label">Your Pairing Code</div>
-        <div class="code-value" id="codeDisplay">----</div>
-        <div class="code-hint">⏰ Code expires in ~60 seconds. Enter it quickly!</div>
-      </div>
-
-      <div class="instructions">
-        <ol>
-          <li>Open <strong style="color:#fff">WhatsApp</strong> on your phone</li>
-          <li>Go to <strong style="color:#fff">Settings → Linked Devices</strong></li>
-          <li>Tap <strong style="color:#fff">"Link a Device"</strong></li>
-          <li>Tap <strong style="color:#fff">"Link with phone number instead"</strong></li>
-          <li>Enter the code shown above</li>
-        </ol>
-      </div>
-
-      <div class="waiting-box">
-        <div class="spinner"></div>
-        <div class="waiting-text">
-          <strong>Waiting for WhatsApp pairing...</strong>
-          Enter the code in your WhatsApp app now <span class="pulse-dot"></span>
-        </div>
-      </div>
-
-      <button class="btn btn-ghost" onclick="resetAll()">🔄 Start Over</button>
-    </div>
-
-    <!-- Panel 3: Success - Show SESSION_ID -->
-    <div class="panel" id="panel-success">
-      <div style="text-align:center; margin-bottom: 24px;">
-        <div class="success-icon">✅</div>
-        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 6px;">WhatsApp Connected!</h2>
-        <p style="color: var(--muted); font-size: 13px;">Your SESSION_ID is ready. Copy it carefully.</p>
-      </div>
-
-      <div class="alert alert-warning">
-        <span>⚠️</span>
-        <span>Keep this SESSION_ID <strong>private</strong>. It gives full access to your WhatsApp account.</span>
-      </div>
-
-      <label>Your SESSION_ID</label>
-      <div class="session-box">
-        <textarea id="sessionOutput" readonly></textarea>
-        <button class="copy-btn" id="copyBtn" onclick="copySession()">Copy</button>
-      </div>
-
-      <div class="alert alert-info" style="margin-bottom: 20px;">
-        <span>📋</span>
-        <span>Set this as <strong>SESSION_ID</strong> in your Heroku config vars. Bot will connect instantly!</span>
-      </div>
-
-      <button class="btn btn-ghost" onclick="resetAll()">🔄 Generate Another</button>
-    </div>
-
+    <ul class="slist">
+      <li><div class="sn">1</div><span>Enter full number with country code e.g. <strong style="color:#fff">923216046022</strong></span></li>
+      <li><div class="sn">2</div><span>Click Get Pairing Code — code appears in ~10 seconds</span></li>
+      <li><div class="sn">3</div><span>Enter code in WhatsApp → Settings → Linked Devices</span></li>
+      <li><div class="sn">4</div><span>Copy your SESSION_ID and give it to Claude for the bot</span></li>
+    </ul>
+    <button class="btn btn-p" id="pairBtn" onclick="startPairing()">📲 Get Pairing Code</button>
   </div>
 
-  <!-- Footer -->
-  <div class="footer">
-    🇵🇰 Pakistan Jobs Bot &nbsp;•&nbsp; Session Generator v2.0
+  <!-- Panel 2: Waiting for code / showing code -->
+  <div class="panel" id="p-code">
+    <!-- Connecting state -->
+    <div id="connecting-state">
+      <div class="wbox">
+        <div class="spin"></div>
+        <div class="wtt">Connecting to WhatsApp...</div>
+        <div class="wt">Please wait ~10 seconds <span class="pd"></span></div>
+      </div>
+    </div>
+    <!-- Code ready state -->
+    <div id="code-state" style="display:none">
+      <div class="codebox">
+        <div class="clabel">Your Pairing Code</div>
+        <div class="cval" id="codeDisplay">----</div>
+        <div class="chint">⏰ Enter this code quickly — it expires in ~60 seconds</div>
+      </div>
+      <ul class="slist">
+        <li><div class="sn">1</div><span>Open <strong style="color:#fff">WhatsApp</strong> on your phone</span></li>
+        <li><div class="sn">2</div><span>Go to <strong style="color:#fff">Settings → Linked Devices → Link a Device</strong></span></li>
+        <li><div class="sn">3</div><span>Tap <strong style="color:#fff">"Link with phone number instead"</strong></span></li>
+        <li><div class="sn">4</div><span>Enter the code above</span></li>
+      </ul>
+      <div class="wbox" style="padding:12px 0">
+        <span class="status-dot"></span>
+        <span style="color:var(--m);font-size:13px">Waiting for you to enter the code in WhatsApp...</span>
+      </div>
+    </div>
+    <button class="btn btn-g" onclick="resetAll()">🔄 Start Over</button>
   </div>
+
+  <!-- Panel 3: Success -->
+  <div class="panel" id="p-done">
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="sicon">✅</div>
+      <h2 style="font-size:19px;font-weight:800;margin-bottom:5px">Connected!</h2>
+      <p style="color:var(--m);font-size:13px">Your SESSION_ID is ready. Copy it now.</p>
+    </div>
+    <div class="alert aw"><span>⚠️</span><span>Keep this <strong>private</strong> — it gives full access to your WhatsApp.</span></div>
+    <label>Your SESSION_ID</label>
+    <div class="sbox">
+      <textarea id="sessionOut" readonly></textarea>
+      <button class="cpbtn" id="cpBtn" onclick="copyIt()">Copy</button>
+    </div>
+    <div class="alert ai" style="margin-bottom:18px"><span>📋</span><span>Set as <strong>SESSION_ID</strong> in Heroku config vars → bot connects instantly!</span></div>
+    <button class="btn btn-g" onclick="resetAll()">🔄 Generate Another</button>
+  </div>
+</div>
+
+<div class="footer">🇵🇰 Pakistan Jobs Bot • Session Generator v2.0</div>
 
 <script>
-  let currentPhone = "";
-  let pollInterval = null;
+  let phone = "";
+  let poll = null;
 
-  function showPanel(id) {
-    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-    document.getElementById("panel-" + id).classList.add("active");
-  }
-
-  function setStep(n) {
-    for (let i = 1; i <= 3; i++) {
-      const step = document.getElementById("step" + i);
-      step.classList.remove("active", "done");
-      if (i < n) step.classList.add("done");
-      if (i === n) step.classList.add("active");
+  function setStep(n){
+    for(let i=1;i<=3;i++){
+      const s=document.getElementById('s'+i);
+      s.classList.remove('active','done');
+      if(i<n)s.classList.add('done');
+      if(i===n)s.classList.add('active');
     }
-    for (let i = 1; i <= 2; i++) {
-      const line = document.getElementById("line" + i);
-      line.classList.toggle("done", i < n);
+    for(let i=1;i<=2;i++){
+      document.getElementById('l'+i).classList.toggle('done',i<n);
     }
   }
 
-  async function requestPairingCode() {
-    const input = document.getElementById("phoneInput");
-    const phone = input.value.replace(/[^0-9]/g, "");
+  function showPanel(id){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('p-'+id).classList.add('active');
+  }
 
-    if (phone.length < 10) {
-      alert("Please enter a valid phone number with country code (e.g. 923216046022)");
-      return;
-    }
+  async function startPairing(){
+    const val = document.getElementById('phoneInput').value.replace(/[^0-9]/g,'');
+    if(val.length < 10){ alert('Please enter a valid number with country code e.g. 923216046022'); return; }
+    phone = val;
 
-    const btn = document.getElementById("getPairBtn");
+    const btn = document.getElementById('pairBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></span> Connecting...';
+    btn.innerHTML = '<div class="spin" style="width:18px;height:18px;border-width:2px;margin:0"></div> Connecting...';
 
     try {
-      const res = await fetch("/api/pair", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+      const r = await fetch('/api/pair',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({phone})
       });
-      const data = await res.json();
+      const d = await r.json();
+      if(!r.ok || d.error) throw new Error(d.error||'Server error');
 
-      if (!res.ok || data.error) throw new Error(data.error || "Server error");
-
-      currentPhone = phone;
-      document.getElementById("codeDisplay").textContent = data.code;
-      showPanel("code");
+      showPanel('code');
       setStep(2);
-      startPolling(phone);
-
-    } catch (err) {
-      alert("❌ Error: " + err.message);
-      btn.disabled = false;
-      btn.innerHTML = '<span>📲</span> Get Pairing Code';
+      startPolling();
+    } catch(e){
+      alert('❌ '+e.message);
+      btn.disabled=false;
+      btn.innerHTML='📲 Get Pairing Code';
     }
   }
 
-  function startPolling(phone) {
-    if (pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(async () => {
+  function startPolling(){
+    if(poll) clearInterval(poll);
+    poll = setInterval(async()=>{
       try {
-        const res = await fetch("/api/session/" + phone);
-        const data = await res.json();
-        if (data.status === "connected" && data.sessionId) {
-          clearInterval(pollInterval);
-          document.getElementById("sessionOutput").value = data.sessionId;
-          showPanel("success");
+        const r = await fetch('/api/status/'+phone);
+        const d = await r.json();
+
+        if(d.status === 'code_ready' || d.status === 'connected'){
+          // Show the code
+          if(d.code){
+            document.getElementById('codeDisplay').textContent = d.code;
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('code-state').style.display = 'block';
+          }
+        }
+
+        if(d.status === 'connected' && d.sessionId){
+          clearInterval(poll);
+          document.getElementById('sessionOut').value = d.sessionId;
+          showPanel('done');
           setStep(3);
         }
-      } catch (_) {}
+
+        if(d.status === 'error'){
+          clearInterval(poll);
+          alert('❌ Error: '+(d.error||'Unknown error. Please try again.'));
+          resetAll();
+        }
+      } catch(_){}
     }, 2000);
   }
 
-  function copySession() {
-    const ta = document.getElementById("sessionOutput");
-    ta.select();
-    ta.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(ta.value).catch(() => document.execCommand("copy"));
-    const btn = document.getElementById("copyBtn");
-    btn.textContent = "✅ Copied!";
-    btn.classList.add("copied");
-    setTimeout(() => {
-      btn.textContent = "Copy";
-      btn.classList.remove("copied");
-    }, 2500);
+  function copyIt(){
+    const ta = document.getElementById('sessionOut');
+    ta.select(); ta.setSelectionRange(0,99999);
+    navigator.clipboard.writeText(ta.value).catch(()=>document.execCommand('copy'));
+    const b = document.getElementById('cpBtn');
+    b.textContent='✅ Copied!'; b.classList.add('ok');
+    setTimeout(()=>{ b.textContent='Copy'; b.classList.remove('ok'); },2500);
   }
 
-  function resetAll() {
-    if (pollInterval) clearInterval(pollInterval);
-    currentPhone = "";
-    document.getElementById("phoneInput").value = "";
-    document.getElementById("codeDisplay").textContent = "----";
-    document.getElementById("sessionOutput").value = "";
-    const btn = document.getElementById("getPairBtn");
-    btn.disabled = false;
-    btn.innerHTML = '<span>📲</span> Get Pairing Code';
-    showPanel("phone");
-    setStep(1);
+  function resetAll(){
+    if(poll) clearInterval(poll); poll=null;
+    phone='';
+    document.getElementById('phoneInput').value='';
+    document.getElementById('codeDisplay').textContent='----';
+    document.getElementById('sessionOut').value='';
+    document.getElementById('connecting-state').style.display='block';
+    document.getElementById('code-state').style.display='none';
+    const b=document.getElementById('pairBtn');
+    b.disabled=false; b.innerHTML='📲 Get Pairing Code';
+    showPanel('phone'); setStep(1);
   }
 
-  // Allow pressing Enter to submit
-  document.getElementById("phoneInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") requestPairingCode();
-  });
+  document.getElementById('phoneInput').addEventListener('keydown',e=>{ if(e.key==='Enter') startPairing(); });
 </script>
 </body>
 </html>
